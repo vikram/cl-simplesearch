@@ -1,18 +1,18 @@
 ;; -*- lisp -*-
 
-(defpackage :com.search.system
+(defpackage :com.cl-simplesearch.system
   (:use :asdf :cl))
 
-(in-package :com.search.system)
+(in-package :com.cl-simplesearch.system)
 
 #+openmcl
 (require "OBJC-SUPPORT")
 
-(defsystem :search
-    :name "search"
+(defsystem :cl-simplesearch
+    :name "cl-simplesearch"
     :author "Vikram Bhandoh <vikram.bhandoh@gmail.com>"
     :version "0.2"
-    :description "All code for the search"
+    :description "All code for the cl-simplesearch"
     :depends-on (:cl-ppcre :md5 :cl-store)
     :components
     ((:file "packages")
