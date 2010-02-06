@@ -2,6 +2,19 @@
 
 (defparameter *test-triples* nil)
 
+(defstruct (mem (:type vector)) 
+  (index-file-path #'(lambda (filename data-folder) (s+ data-folder "index/" filename)))
+  (dict-size 0)
+  (num-rec 0)
+  (total (* 20 1024 1024))
+  (block-size (* 64 1024))
+  (num-of-triples 0)
+  (triples '())
+  (run 0)
+  (termid 0)
+  (dict (make-hash-table :test 'equal :size 1500000))
+  (run-table (make-hash-table)))
+
 (defun setup-triples (x)
   (setf *test-triples*
 	(sort (map1-n #'(lambda (n) (list (random n) (random n) (random 10))) x)
@@ -191,6 +204,16 @@
 			   (setf (run-cur-pos run) -1)
 			   (setf (run-bits run) seq))
 			 (read-next-byte run-num))))))
+	   (read-variable-bytes (run-num)
+	     (let ((byte 0)
+		   (prv '()))
+	       (loop
+		  (setf byte (read-next-byte run-num))
+		  (if (not byte)
+		      (return nil)
+		      (if (ends-in-0 byte)
+			  (return (decode-variable-bytes (nreverse (cons byte prv))))
+			  (push byte prv))))))
 	   (multiway-in-place-sort-inverter ()
 	     (let ((docid 0) (doc ""))
 	       (setf (mem-index-file-path mem) #'(lambda (filename data-folder) (s+ data-folder "index/" index-name "/" filename)))
@@ -239,19 +262,6 @@
 			     :test #'= :key #'car))))
 	    (:lexicon #'(lambda (term)
 			  (gethash (string-upcase term) lexicon))))))))
-
-(defstruct (mem (:type vector)) 
-  (index-file-path #'(lambda (filename data-folder) (s+ data-folder "index/" filename)))
-  (dict-size 0)
-  (num-rec 0)
-  (total (* 20 1024 1024))
-  (block-size (* 64 1024))
-  (num-of-triples 0)
-  (triples '())
-  (run 0)
-  (termid 0)
-  (dict (make-hash-table :test 'equal :size 1500000))
-  (run-table (make-hash-table)))
 
 (defun terms->id (terms mem)
   (mapcar #'(lambda (bits)
@@ -308,17 +318,6 @@
 
 (defun ends-in-0 (byte)
   (zerop (car (last (convert-integer-to-bit-string byte)))))
-
-(defun read-variable-bytes (run-num mem)
-  (let ((byte 0)
-	(prv '()))
-    (loop
-       (setf byte (read-next-byte run-num mem))
-       (if (not byte)
-	   (return nil)
-	   (if (ends-in-0 byte)
-	       (return (decode-variable-bytes (nreverse (cons byte prv))))
-	       (push byte prv))))))
 
 (defun nothing-to-read? (run mem)
   (>= (* (run-loaded-block-num run) (mem-block-size mem)) (- (run-end run) (run-start run))))
