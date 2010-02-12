@@ -1,0 +1,6 @@
+A library that does full-text indexing in lisp.
+
+Todo....
+* Sort out the interface
+* Search on fields
+* Make it update friendly - add remove new documents
