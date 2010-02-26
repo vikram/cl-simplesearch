@@ -9,3 +9,4 @@
        (progn
 	 (incf docid)
 	 (print (cons docid doc))))))
+

@@ -3,7 +3,7 @@
 (defparameter *test-triples* nil)
 
 (defstruct (mem (:type vector)) 
-  (index-file-path #'(lambda (filename data-folder) (s+ data-folder "index/" filename)))
+  (index-file-path #'(lambda (filename index-folder) (s+ index-folder "index/" filename)))
   (dict-size 0)
   (num-rec 0)
   (total (* 20 1024 1024))
@@ -61,13 +61,13 @@
 
 (defstruct (bits (:type vector)) len cur data)
 
-(defun make-file-indexer (data-folder index-name filename)
-  (make-indexer data-folder index-name :filename filename))
+(defun make-file-indexer (index-folder index-name filename)
+  (make-indexer index-folder index-name :filename filename))
 
-(defun make-general-indexer (data-folder index-name doc-reader doc-parser)
-  (make-indexer data-folder index-name :doc-reader doc-reader :parse-document doc-parser))
+(defun make-general-indexer (index-folder index-name doc-reader doc-parser)
+  (make-indexer index-folder index-name :doc-reader doc-reader :parse-document doc-parser))
 
-(defun make-indexer (data-folder
+(defun make-indexer (index-folder
 		     index-name
 		     &key 
 		     (restart-p t)
@@ -79,9 +79,9 @@
 		     (mem-indexer #'in-memory-index)
 		     (padd-byte 0))
   (labels ((mempath (filename)
-	     (funcall (mem-index-file-path mem) filename data-folder))
+	     (funcall (mem-index-file-path mem) filename index-folder))
 	   (index-path->file (file)
-	     (s+ data-folder "index/" index-name "/" file))
+	     (s+ index-folder "index/" index-name "/" file))
 	   (create-lexicon ()
 	     (write-hashtable (mempath "terms") (mem-dict mem)))
 	   (write-run-table ()
@@ -216,7 +216,7 @@
 			  (push byte prv))))))
 	   (multiway-in-place-sort-inverter ()
 	     (let ((docid 0) (doc ""))
-	       (setf (mem-index-file-path mem) #'(lambda (filename data-folder) (s+ data-folder "index/" index-name "/" filename)))
+	       (setf (mem-index-file-path mem) #'(lambda (filename index-folder) (s+ index-folder "index/" index-name "/" filename)))
 	       (ensure-directories-exist (mempath ""))
 	       (when (probe-file (mempath "temp")) (delete-file (mempath "temp")))
 	       (print 'init)

@@ -4,6 +4,18 @@
 			       &key (base-folder)
 			       (delimiter (cl-ppcre:create-scanner '(:char-class #\return #\newline #\linefeed))) (buffer-size 512000) 
 			       (restart-p nil) (abort-after nil))
+  """Reads a file and breaks it up based on the delimiter.
+   It remembers the last point until which it has read.
+   API------>
+   (let ((reader (checkpoint-file-reader "document-file-name"))
+         (doc nil))
+     (loop
+       (setf doc (funcall reader))
+       (when (or (not doc) (and (stringp doc) (string= doc "")))
+         (return 'done))
+       (progn
+         do stuff)))
+   """
   (let ((seq (make-array buffer-size :element-type 'character
 			 :adjustable t
 			 :fill-pointer buffer-size))
@@ -46,3 +58,11 @@
 	      (awhen (first lines)
 		(setf lines (rest lines))
 		it))))))
+
+;;;should implement these as a stream interface then 
+;;;with-open-file will just work properly.....and so
+;;;would read on the stream.
+;;;the current interface sucks
+
+;;;make-indexer gives the object
+;;;when making 

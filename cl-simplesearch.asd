@@ -5,9 +5,6 @@
 
 (in-package :com.cl-simplesearch.system)
 
-#+openmcl
-(require "OBJC-SUPPORT")
-
 (defsystem :cl-simplesearch
     :name "cl-simplesearch"
     :author "Vikram Bhandoh <vikram.bhandoh@gmail.com>"
